@@ -22,8 +22,8 @@ namespace MiniPlayerWpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        private DataSet musicDataSet;
         private MediaPlayer mediaPlayer;
+        private MusicLib musicLib;
 
         public MainWindow()
         {
@@ -67,23 +67,25 @@ namespace MiniPlayerWpf
             }
         }
 
-        private void PrintAllTables()
+        private void addButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach (DataTable table in musicDataSet.Tables)
+            // Add the selected file to the music library
+            Song s = new Song
             {
-                Console.WriteLine("Table name = " + table.TableName);
-                foreach (DataRow row in table.Rows)
-                {
-                    Console.WriteLine("Row:");
-                    int i = 0;
-                    foreach (Object item in row.ItemArray)
-                    {
-                        Console.WriteLine(" " + table.Columns[i].Caption + "=" + item);
-                        i++;
-                    }
-                }
-                Console.WriteLine();
-            }
+                Title = titleTextBox.Text,
+                Artist = artistTextBox.Text,
+                Album = albumTextBox.Text,
+                Genre = genreTextBox.Text,
+                Length = lengthTextBox.Text,
+                Filename = filenameTextBox.Text
+            };
+            string id = musicLib.AddSong(s).ToString();
+            // Add the song ID to the combo box
+            songIdComboBox.IsEnabled = true;
+            (songIdComboBox.ItemsSource as ObservableCollection<string>).Add(id);
+            songIdComboBox.SelectedIndex = songIdComboBox.Items.Count‐ 1;
+            // There is at least one song that can be deleted
+            deleteButton.IsEnabled = true;
         }
 
         private void openButton_Click(object sender, RoutedEventArgs e)
@@ -143,32 +145,6 @@ namespace MiniPlayerWpf
         private void DisplayError(string errorMessage)
         {
             MessageBox.Show(errorMessage, "MiniPlayer", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        private void addButton_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("Adding song");
-
-            // Add the selected file to the song table
-            DataTable table = musicDataSet.Tables["song"];
-            DataRow row = table.NewRow();
-
-            row["title"] = titleTextBox.Text;
-            row["artist"] = artistTextBox.Text;
-            row["album"] = albumTextBox.Text;
-            row["filename"] = filenameTextBox.Text;
-            row["length"] = lengthTextBox.Text;
-            row["genre"] = genreTextBox.Text;
-            table.Rows.Add(row);
-
-            // Now that the id has been set, add it to the combo box
-            songIdComboBox.IsEnabled = true;
-            string id = row["id"].ToString();
-            (songIdComboBox.ItemsSource as ObservableCollection<string>).Add(id);
-            songIdComboBox.SelectedIndex = songIdComboBox.Items.Count - 1;
-
-            // There is at least one song that can be deleted
-            deleteButton.IsEnabled = true;
         }
 
         private void updateButton_Click(object sender, RoutedEventArgs e)
